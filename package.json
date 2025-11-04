@@ -1,0 +1,35 @@
+{
+  "name": "swdevprac-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "dotenv -- nodemon --exec tsx server.ts",
+    "build": "tsdown",
+    "preview": "node dist/server.js"
+  },
+  "devDependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.0",
+    "@types/swagger-ui-express": "^4.1.8",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv-cli": "^11.0.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.3",
+    "nodemon": "^3.1.10",
+    "swagger-ui-express": "^5.0.1",
+    "tsdown": "^0.16.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "zod": "^4.1.12"
+  }
+}
