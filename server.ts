@@ -46,7 +46,7 @@ app.get("/swagger", swaggerUI.setup(openApiDocument));
 app.get("/scalar", (req, res) => {
   res.setHeader(
     "Content-Security-Policy",
-    "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';"
+    "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval';"
   );
   res.sendFile(path.join(__dirname, "routes", "scalar.html"));
 });
@@ -54,14 +54,12 @@ app.get("/scalar", (req, res) => {
 app.use("/api/v1/auth", auth);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () =>
+const server = app.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   console.log(
-    "Server running in ",
-    process.env.NODE_ENV,
-    " mode on port ",
-    PORT
-  )
-);
+    `📚 Access Scalar UI at \x1b[1mhttp://localhost:${PORT}/scalar\x1b[0m`
+  );
+});
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err: Error) => {
