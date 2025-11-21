@@ -9,6 +9,7 @@ import connectDB from "./config/db";
 import { openApiDocument } from "./docs/swagger";
 import auth from "./routes/auth";
 import hotels from "./routes/hotels";
+import bookings from "./routes/bookings";
 import path from "node:path";
 
 // Connect to database
@@ -57,6 +58,7 @@ app.get("/scalar", (req, res) => {
 
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/hotels", hotels);
+app.use("/api/v1/bookings", bookings);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {

@@ -4,6 +4,7 @@ import {
 } from "@asteasolutions/zod-to-openapi";
 import { registerAuthPaths } from "./auth";
 import { registerHotelPaths } from "./hotels";
+import { registerBookingPaths } from "./bookings";
 
 // Create registry
 const registry = new OpenAPIRegistry();
@@ -18,6 +19,7 @@ registry.registerComponent("securitySchemes", "bearerAuth", {
 // Register all auth paths
 registerAuthPaths(registry);
 registerHotelPaths(registry);
+registerBookingPaths(registry);
 
 // Generate OpenAPI document
 const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -43,6 +45,10 @@ export const openApiDocument = generator.generateDocument({
     {
       name: "Hotels",
       description: "Hotel management endpoints",
+    },
+    {
+      name: "Bookings",
+      description: "Hotel booking management endpoints",
     },
   ],
 });
