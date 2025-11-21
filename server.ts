@@ -8,6 +8,7 @@ import swaggerUI from "swagger-ui-express";
 import connectDB from "./config/db";
 import { openApiDocument } from "./docs/swagger";
 import auth from "./routes/auth";
+import hotels from "./routes/hotels";
 import path from "node:path";
 
 // Connect to database
@@ -18,10 +19,13 @@ const app = express();
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 // Cookie parser
 app.use(cookieParser());
+
 // Cors
 app.use(cors());
+
 // Helmet
 app.use(helmet());
 
@@ -52,6 +56,7 @@ app.get("/scalar", (req, res) => {
 });
 
 app.use("/api/v1/auth", auth);
+app.use("/api/v1/hotels", hotels);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
