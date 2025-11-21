@@ -3,14 +3,12 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import swaggerUI from "swagger-ui-express";
 
 import connectDB from "./config/db";
-import { openApiDocument } from "./docs/swagger";
 import auth from "./routes/auth";
 import hotels from "./routes/hotels";
 import bookings from "./routes/bookings";
-import path from "node:path";
+import docs from "./routes/docs";
 
 // Connect to database
 connectDB();
@@ -37,25 +35,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// OpenAPI JSON
-app.get("/openapi.json", (req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(openApiDocument);
-});
-
-// Swagger UI
-app.use("/swagger", swaggerUI.serve);
-app.get("/swagger", swaggerUI.setup(openApiDocument));
-
-// Scalar UI
-app.get("/scalar", (req, res) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval';"
-  );
-  res.sendFile(path.join(__dirname, "routes", "scalar.html"));
-});
-
+app.use("", docs);
 app.use("/api/v1/auth", auth);
 app.use("/api/v1/hotels", hotels);
 app.use("/api/v1/bookings", bookings);

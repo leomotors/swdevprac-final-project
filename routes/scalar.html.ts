@@ -1,3 +1,4 @@
+export const scalarHtml = `
 <!DOCTYPE html>
 <html>
   <head>
@@ -176,3 +177,4 @@
     </script>
   </body>
 </html>
+`;

@@ -1,12 +1,13 @@
 {
   "name": "swdevprac-project",
   "version": "1.0.0",
+  "private": true,
   "description": "",
-  "main": "dist/server.js",
+  "main": "dist/server.cjs",
   "scripts": {
     "dev": "dotenv -- nodemon --exec tsx server.ts",
     "build": "tsdown",
-    "preview": "node dist/server.js"
+    "preview": "node dist/server.cjs"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",
