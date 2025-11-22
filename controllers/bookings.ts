@@ -222,7 +222,7 @@ export const addBooking = async (
   next: NextFunction
 ) => {
   try {
-    const { startDate, endDate, hotel } = BookingRequestSchema.parse(req.body);
+    const { startDate, endDate, hotel, roomNumber } = BookingRequestSchema.parse(req.body);
 
     // Check if hotel exists
     const hotelExists = await Hotel.findById(hotel);
@@ -234,6 +234,14 @@ export const addBooking = async (
       });
     }
 
+    // Validate room number
+    if (roomNumber < 1 || roomNumber > hotelExists.totalRooms) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid room number. Hotel has rooms 1-${hotelExists.totalRooms}`,
+      });
+    }
+
     // Validate dates
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -242,6 +250,22 @@ export const addBooking = async (
       return res.status(400).json({
         success: false,
         message: "End date must be after start date",
+      });
+    }
+
+    // Check for date overlap with existing bookings for this room
+    const overlappingBooking = await Booking.findOne({
+      hotel,
+      roomNumber,
+      $or: [
+        { startDate: { $lt: end }, endDate: { $gt: start } },
+      ],
+    });
+
+    if (overlappingBooking) {
+      return res.status(400).json({
+        success: false,
+        message: `Room ${roomNumber} is already booked for the selected dates`,
       });
     }
 
@@ -263,6 +287,7 @@ export const addBooking = async (
       startDate: start,
       endDate: end,
       hotel,
+      roomNumber,
       user: req.user?.id,
     };
 
@@ -321,6 +346,7 @@ export const updateBooking = async (
       startDate: Date;
       endDate: Date;
       hotel: string;
+      roomNumber: number;
     }> = {};
 
     if (req.body.startDate) {
@@ -331,9 +357,10 @@ export const updateBooking = async (
       updateData.endDate = new Date(req.body.endDate);
     }
 
+    let hotelExists;
     if (req.body.hotel) {
       // Check if hotel exists
-      const hotelExists = await Hotel.findById(req.body.hotel);
+      hotelExists = await Hotel.findById(req.body.hotel);
 
       if (!hotelExists) {
         return res.status(404).json({
@@ -343,6 +370,25 @@ export const updateBooking = async (
       }
 
       updateData.hotel = req.body.hotel;
+    }
+
+    if (req.body.roomNumber !== undefined) {
+      const targetHotel = hotelExists || await Hotel.findById(booking.hotel);
+      if (!targetHotel) {
+        return res.status(404).json({
+          success: false,
+          message: "Hotel not found",
+        });
+      }
+
+      if (req.body.roomNumber < 1 || req.body.roomNumber > targetHotel.totalRooms) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid room number. Hotel has rooms 1-${targetHotel.totalRooms}`,
+        });
+      }
+
+      updateData.roomNumber = req.body.roomNumber;
     }
 
     // Validate dates
@@ -367,6 +413,30 @@ export const updateBooking = async (
         success: false,
         message: "Cannot book more than 3 nights",
       });
+    }
+
+    // Check for date overlap if dates or room number changed
+    if (updateData.startDate || updateData.endDate || updateData.roomNumber) {
+      const checkHotel = updateData.hotel || booking.hotel;
+      const checkRoom = updateData.roomNumber || booking.roomNumber;
+      const checkStart = updateData.startDate || booking.startDate;
+      const checkEnd = updateData.endDate || booking.endDate;
+
+      const overlappingBooking = await Booking.findOne({
+        _id: { $ne: req.params.id },
+        hotel: checkHotel,
+        roomNumber: checkRoom,
+        $or: [
+          { startDate: { $lt: checkEnd }, endDate: { $gt: checkStart } },
+        ],
+      });
+
+      if (overlappingBooking) {
+        return res.status(400).json({
+          success: false,
+          message: `Room ${checkRoom} is already booked for the selected dates`,
+        });
+      }
     }
 
     booking = await Booking.findByIdAndUpdate(req.params.id, updateData, {
