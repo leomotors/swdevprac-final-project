@@ -6,6 +6,7 @@ export const BookingSchema = z.object({
   endDate: z.string().openapi({ example: "2024-12-03" }),
   user: z.string().openapi({ example: "507f1f77bcf86cd799439011" }),
   hotel: z.string().openapi({ example: "507f1f77bcf86cd799439011" }),
+  roomNumber: z.number().openapi({ example: 1 }),
   createdAt: z.string().openapi({ example: "2023-11-05T10:30:00.000Z" }),
 });
 
@@ -13,6 +14,7 @@ export const BookingRequestSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
   hotel: z.string(),
+  roomNumber: z.number().int().positive(),
 });
 
 export const BookingResponseSchema = z.object({
