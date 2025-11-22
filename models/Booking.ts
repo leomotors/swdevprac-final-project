@@ -5,6 +5,7 @@ export interface IBooking extends Document {
   endDate: Date;
   user: mongoose.Types.ObjectId;
   hotel: mongoose.Types.ObjectId;
+  roomNumber: number;
   createdAt: Date;
 }
 
@@ -26,6 +27,10 @@ const BookingSchema = new Schema<IBooking>({
     type: Schema.Types.ObjectId,
     ref: "Hotel",
     required: true,
+  },
+  roomNumber: {
+    type: Number,
+    required: [true, "Please add a room number"],
   },
   createdAt: {
     type: Date,

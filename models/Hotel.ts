@@ -5,6 +5,7 @@ export interface IHotel extends Document {
   address: string;
   telephone: string;
   starRating: number;
+  totalRooms: number;
 }
 
 const HotelSchema = new Schema<IHotel>({
@@ -25,6 +26,11 @@ const HotelSchema = new Schema<IHotel>({
     required: [true, "Please add a star rating"],
     min: 1,
     max: 5,
+  },
+  totalRooms: {
+    type: Number,
+    required: [true, "Please add total rooms"],
+    min: 1,
   },
 }, {
   toJSON: { virtuals: true },

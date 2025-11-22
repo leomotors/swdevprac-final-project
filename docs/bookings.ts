@@ -89,7 +89,7 @@ export function registerBookingPaths(registry: OpenAPIRegistry) {
     method: "post",
     path: "/bookings",
     description:
-      "Create a new booking. Maximum 3 nights per booking. End date must be after start date.",
+      "Create a new booking. Specify room number (1 to hotel's totalRooms). Maximum 3 nights per booking. End date must be after start date. Room must not be booked for overlapping dates.",
     summary: "Create Booking",
     tags: ["Bookings"],
     security: [{ bearerAuth: [] }],
@@ -112,7 +112,7 @@ export function registerBookingPaths(registry: OpenAPIRegistry) {
         },
       },
       400: {
-        description: "Bad request - Invalid dates or exceeds 3 nights limit",
+        description: "Bad request - Invalid dates, exceeds 3 nights limit, invalid room number, or room already booked",
         content: {
           "application/json": {
             schema: ErrorResponseSchema,
@@ -142,7 +142,7 @@ export function registerBookingPaths(registry: OpenAPIRegistry) {
     method: "put",
     path: "/bookings/{id}",
     description:
-      "Update booking by ID. Users can only update their own bookings, admins can update any booking. Maximum 3 nights per booking.",
+      "Update booking by ID. Users can only update their own bookings, admins can update any booking. Maximum 3 nights per booking. Room must not be booked for overlapping dates.",
     summary: "Update Booking",
     tags: ["Bookings"],
     security: [{ bearerAuth: [] }],
@@ -168,7 +168,7 @@ export function registerBookingPaths(registry: OpenAPIRegistry) {
         },
       },
       400: {
-        description: "Bad request - Invalid dates or exceeds 3 nights limit",
+        description: "Bad request - Invalid dates, exceeds 3 nights limit, invalid room number, or room already booked",
         content: {
           "application/json": {
             schema: ErrorResponseSchema,
