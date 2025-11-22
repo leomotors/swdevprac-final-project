@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "dotenv -- nodemon --exec tsx server.ts",
     "build": "tsdown",
-    "preview": "node dist/server.cjs"
+    "preview": "dotenv -- node dist/server.cjs"
   },
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",

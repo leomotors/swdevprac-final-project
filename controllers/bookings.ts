@@ -1,8 +1,118 @@
 import { Response, NextFunction } from "express";
-import Booking from "../models/Booking";
-import Hotel from "../models/Hotel";
+import Booking, { IBooking } from "../models/Booking";
+import Hotel, { IHotel } from "../models/Hotel";
 import { AuthRequest } from "../middleware/auth";
 import { BookingRequestSchema } from "../schemas/bookings";
+import { IUser } from "../models/User";
+
+// Helper function to send Discord webhook notification
+async function sendDiscordNotification(
+  booking: IBooking,
+  hotel: IHotel,
+  user: Omit<IUser, "password">,
+  nights: number
+) {
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.error("Discord webhook URL not configured");
+    return;
+  }
+
+  const startDate = new Date(booking.startDate).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const endDate = new Date(booking.endDate).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const embed = {
+    title: "🏨 New Hotel Booking Created!",
+    color: 0x3498db, // Blue color
+    fields: [
+      {
+        name: "👤 Guest",
+        value: user.name,
+        inline: true,
+      },
+      {
+        name: "📧 Email",
+        value: user.email,
+        inline: true,
+      },
+      {
+        name: "🏨 Hotel",
+        value: hotel.name,
+        inline: false,
+      },
+      {
+        name: "Star Rating",
+        value: "⭐".repeat(hotel.starRating),
+        inline: true,
+      },
+      {
+        name: "📍 Address",
+        value: hotel.address,
+        inline: false,
+      },
+      {
+        name: "📞 Contact",
+        value: hotel.telephone,
+        inline: true,
+      },
+      {
+        name: "📅 Check-in",
+        value: startDate,
+        inline: true,
+      },
+      {
+        name: "📅 Check-out",
+        value: endDate,
+        inline: true,
+      },
+      {
+        name: "🌙 Nights",
+        value: `${nights} Night${nights > 1 ? "s" : ""}`,
+        inline: true,
+      },
+      {
+        name: "🆔 Booking ID",
+        value: `\`${booking._id}\``,
+        inline: false,
+      },
+    ],
+    footer: {
+      text: "Hotel Booking System",
+    },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        embeds: [embed],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        "Failed to send Discord notification:",
+        response.statusText
+      );
+    }
+  } catch (error) {
+    console.error("Error sending Discord notification:", error);
+  }
+}
 
 //@desc Get all bookings
 //@route GET /api/v1/bookings
@@ -46,10 +156,10 @@ export const getBookings = async (
       count: bookings.length,
       data: bookings,
     });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message,
+      message: err instanceof Error ? err.message : "An error occurred",
     });
   }
 };
@@ -95,10 +205,10 @@ export const getBooking = async (
       success: true,
       data: booking,
     });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message,
+      message: err instanceof Error ? err.message : "An error occurred",
     });
   }
 };
@@ -158,14 +268,21 @@ export const addBooking = async (
 
     const booking = await Booking.create(bookingData);
 
+    // Send Discord notification (async, don't await to avoid blocking response)
+    if (req.user) {
+      sendDiscordNotification(booking, hotelExists, req.user, nights).catch(
+        (err) => console.error("Discord notification error:", err)
+      );
+    }
+
     res.status(201).json({
       success: true,
       data: booking,
     });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message,
+      message: err instanceof Error ? err.message : "An error occurred",
     });
   }
 };
@@ -200,7 +317,11 @@ export const updateBooking = async (
     }
 
     // Validate dates if provided
-    const updateData: any = {};
+    const updateData: Partial<{
+      startDate: Date;
+      endDate: Date;
+      hotel: string;
+    }> = {};
 
     if (req.body.startDate) {
       updateData.startDate = new Date(req.body.startDate);
@@ -257,10 +378,10 @@ export const updateBooking = async (
       success: true,
       data: booking,
     });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message,
+      message: err instanceof Error ? err.message : "An error occurred",
     });
   }
 };
@@ -300,10 +421,10 @@ export const deleteBooking = async (
       success: true,
       data: {},
     });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message,
+      message: err instanceof Error ? err.message : "An error occurred",
     });
   }
 };
