@@ -16,7 +16,7 @@ export const getHotels = async (req: AuthRequest, res: Response, next: NextFunct
   let queryStr = JSON.stringify(reqQuery);
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
-  query = Hotel.find(JSON.parse(queryStr)).populate('bookings');
+  query = Hotel.find(JSON.parse(queryStr));
 
   if (req.query.select) {
     const fields = (req.query.select as string).split(',').join(' ');
